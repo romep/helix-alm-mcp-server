@@ -72,7 +72,7 @@ Status = 'Approved'
 Priority = 'High' AND Status != 'Closed'
 ```
 
-See CLAUDE.md for detailed documentation.
+See [BACKLOG.md](BACKLOG.md) for known limitations and planned enhancements.
 
 ## Known Limitations
 

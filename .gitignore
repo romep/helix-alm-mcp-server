@@ -55,3 +55,8 @@ tests/HelixALM*
 
 # Personal/private files
 MCP_Server_Context_for_8451_Prep.md
+
+# Internal development documentation (not relevant to public users)
+CLAUDE.md
+PLANNING.md
+DEVELOPMENT-HISTORY.md
