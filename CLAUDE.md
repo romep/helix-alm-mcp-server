@@ -11,13 +11,13 @@
 - ✅ **Implement `add_requirements_to_document`** (Issue #4) - Adds requirements to document trees; supports document identifier resolution
 - ✅ **Rate-limit handling** - Client retries on HTTP 429 with exponential backoff; inter-test delays prevent rate limiting during pytest
 - ✅ **Test suite** - 45 pytest tests (unit + integration) all passing
+- ✅ **GitHub repository** - published at https://github.com/romep/helix-alm-mcp-server
 
 ### Immediate Tasks (Next Session)
 
-1. **Set up GitHub repository** - meaningful commits, .gitignore, README, PR workflow
-2. **Eval testing** - tool discovery, tool selection, parameter extraction, multi-model (Promptfoo)
-3. **Security hardening** - query injection escaping, SSL verification option, error message sanitization
-4. **Test untested tools** - `create_requirement`, `get_requirement_types`, `create_requirement_document`
+1. **Eval testing** - tool discovery, tool selection, parameter extraction, multi-model (Promptfoo)
+2. **Security hardening** - query injection escaping, SSL verification option, error message sanitization
+3. **Test untested tools** - `create_requirement`, `get_requirement_types`, `create_requirement_document`
 
 ### Key Files
 
