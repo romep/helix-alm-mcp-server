@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "helix-alm": {
+      "type": "stdio",
+      "command": "/path/to/your/HelixALM_MCP_Server/venv/bin/python",
+      "args": ["-m", "helix_alm_mcp.server"],
+      "cwd": "/path/to/your/HelixALM_MCP_Server"
+    }
+  }
+}
