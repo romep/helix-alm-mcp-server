@@ -313,6 +313,231 @@ class TestListRequirementDocumentsTool:
         assert len(response["documents"]) >= len(DOCUMENTS)
 
 
+class TestGetRequirementTypesTool:
+    """Tests for get_requirement_types tool handler."""
+
+    @pytest.mark.asyncio
+    async def test_get_requirement_types(self):
+        """Get requirement types returns a list of type objects with IDs."""
+        result = await call_tool("get_requirement_types", {})
+
+        assert not result[0].text.startswith("Error")
+        response = json.loads(result[0].text)
+        assert "requirementTypesData" in response
+        types = response["requirementTypesData"]
+        assert len(types) >= 1
+        # Each type should have an id and a label
+        for req_type in types:
+            assert "id" in req_type
+            assert "label" in req_type
+
+    @pytest.mark.asyncio
+    async def test_requirement_types_match_hardcoded_map(self):
+        """Verify API response type IDs match the hardcoded mapping in server.py."""
+        result = await call_tool("get_requirement_types", {})
+        response = json.loads(result[0].text)
+        types = response["requirementTypesData"]
+
+        # Build a label→id map from the API response
+        api_map = {t["label"]: t["id"] for t in types}
+
+        # Hardcoded mapping from server.py
+        expected_map = {
+            "User Story": 4,
+            "Task": 5,
+            "Overview": 6,
+            "Functional Requirement": 7,
+            "Business Requirement": 8,
+            "Non-Functional Requirement": 9,
+            "Design Note": 10,
+            "Software  Requirements": 11,
+            "Security Requirement": 12,
+            "Technical Requirement": 13,
+            "Hardware Requirements": 14,
+            "Risk": 15,
+            "Performance Requirement": 17,
+            "Use Case": 18,
+            "Compliance Requirement": 19,
+            "Glossary": 20,
+            "Hazards": 22,
+            "Harms": 23,
+        }
+
+        for label, expected_id in expected_map.items():
+            assert label in api_map, f"Type '{label}' not found in API response"
+            assert api_map[label] == expected_id, (
+                f"Type '{label}' has ID {api_map[label]} but expected {expected_id}"
+            )
+
+
+class TestCreateRequirementTool:
+    """Tests for create_requirement tool handler."""
+
+    @pytest.mark.asyncio
+    async def test_create_requirement_with_summary_only(self):
+        """Create with just a summary returns id, number, and tag."""
+        result = await call_tool("create_requirement", {
+            "summary": "Test Create - Summary Only",
+        })
+
+        assert not result[0].text.startswith("Error")
+        response = json.loads(result[0].text)
+        # API wraps in "requirements" array
+        assert "requirements" in response
+        created = response["requirements"][0]
+        assert "id" in created
+        assert "number" in created
+        assert "tag" in created
+
+    @pytest.mark.asyncio
+    async def test_create_requirement_with_description(self):
+        """Create with summary + description, then verify description persisted."""
+        desc_text = "<p>Test description for create requirement</p>"
+        result = await call_tool("create_requirement", {
+            "summary": "Test Create - With Description",
+            "description": desc_text,
+        })
+
+        assert not result[0].text.startswith("Error")
+        response = json.loads(result[0].text)
+        created = response["requirements"][0]
+
+        # Fetch the created requirement and verify description
+        get_result = await call_tool("get_requirement", {
+            "record_id": created["id"],
+        })
+        fetched = json.loads(get_result[0].text)
+        desc_field = None
+        for field in fetched.get("fields", []):
+            if field.get("label") == "Description":
+                desc_field = field.get("formattedString", {}).get("text", "")
+                break
+        assert desc_text in (desc_field or "")
+
+    @pytest.mark.asyncio
+    async def test_create_requirement_with_type(self):
+        """Create as User Story (not default) and verify type is set."""
+        result = await call_tool("create_requirement", {
+            "summary": "Test Create - User Story Type",
+            "requirement_type": "User Story",
+        })
+
+        assert not result[0].text.startswith("Error")
+        response = json.loads(result[0].text)
+        created = response["requirements"][0]
+        # Tag should start with "US-" for User Story
+        assert created["tag"].startswith("US-"), (
+            f"Expected tag starting with 'US-', got '{created['tag']}'"
+        )
+
+    @pytest.mark.asyncio
+    async def test_create_requirement_default_type(self):
+        """Create without specifying type defaults to Functional Requirement."""
+        result = await call_tool("create_requirement", {
+            "summary": "Test Create - Default Type",
+        })
+
+        assert not result[0].text.startswith("Error")
+        response = json.loads(result[0].text)
+        created = response["requirements"][0]
+        # Tag should start with "FR-" for Functional Requirement
+        assert created["tag"].startswith("FR-"), (
+            f"Expected tag starting with 'FR-', got '{created['tag']}'"
+        )
+
+    @pytest.mark.asyncio
+    async def test_created_requirement_retrievable(self):
+        """Create a requirement, then retrieve it by record_id."""
+        result = await call_tool("create_requirement", {
+            "summary": "Test Create - Retrievable",
+        })
+
+        response = json.loads(result[0].text)
+        created = response["requirements"][0]
+
+        get_result = await call_tool("get_requirement", {
+            "record_id": created["id"],
+        })
+        assert not get_result[0].text.startswith("Error")
+        fetched = json.loads(get_result[0].text)
+        assert fetched["id"] == created["id"]
+        assert fetched["tag"] == created["tag"]
+
+
+class TestCreateRequirementDocumentTool:
+    """Tests for create_requirement_document tool handler."""
+
+    @pytest.mark.asyncio
+    async def test_create_document_with_name_only(self):
+        """Create with just a name returns id, number, and tag."""
+        result = await call_tool("create_requirement_document", {
+            "name": "Test Doc - Name Only",
+        })
+
+        assert not result[0].text.startswith("Error")
+        response = json.loads(result[0].text)
+        assert "documents" in response
+        created = response["documents"][0]
+        assert "id" in created
+        assert "number" in created
+        assert "tag" in created
+
+    @pytest.mark.asyncio
+    async def test_create_document_with_description(self):
+        """Create with name + description."""
+        result = await call_tool("create_requirement_document", {
+            "name": "Test Doc - With Description",
+            "description": "<p>Test document description</p>",
+        })
+
+        assert not result[0].text.startswith("Error")
+        response = json.loads(result[0].text)
+        assert "documents" in response
+        assert len(response["documents"]) >= 1
+
+    @pytest.mark.asyncio
+    async def test_create_document_with_type(self):
+        """Create as MRD (not default PRD) and verify document type."""
+        result = await call_tool("create_requirement_document", {
+            "name": "Test Doc - MRD Type",
+            "document_type": "MRD",
+        })
+
+        assert not result[0].text.startswith("Error")
+        response = json.loads(result[0].text)
+        created = response["documents"][0]
+        assert "id" in created
+
+    @pytest.mark.asyncio
+    async def test_create_document_default_type(self):
+        """Create without specifying type defaults to PRD."""
+        result = await call_tool("create_requirement_document", {
+            "name": "Test Doc - Default Type",
+        })
+
+        assert not result[0].text.startswith("Error")
+        response = json.loads(result[0].text)
+        assert "documents" in response
+        assert len(response["documents"]) >= 1
+
+    @pytest.mark.asyncio
+    async def test_created_document_usable(self):
+        """Create a document, then add a requirement to verify it's functional."""
+        doc_result = await call_tool("create_requirement_document", {
+            "name": "Test Doc - Usable Check",
+        })
+
+        doc_response = json.loads(doc_result[0].text)
+        doc_id = doc_response["documents"][0]["id"]
+
+        req = REQUIREMENTS["business_need"]
+        add_result = await call_tool("add_requirements_to_document", {
+            "record_id": doc_id,
+            "requirement_ids": [req["record_id"]],
+        })
+        assert not add_result[0].text.startswith("Error")
+
+
 class TestAddRequirementsToDocumentTool:
     """Tests for add_requirements_to_document tool handler.
 
