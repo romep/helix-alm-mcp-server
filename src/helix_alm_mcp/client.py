@@ -317,9 +317,22 @@ class HelixALMClient:
 
     # === Requirement Documents API ===
 
-    async def list_requirement_documents(self) -> dict:
-        """List all requirement documents."""
-        return await self.get("documents")
+    async def list_requirement_documents(
+        self,
+        fields: list[str] | None = None,
+        search: str | None = None,
+        page: int = 1,
+        per_page: int = 25,
+    ) -> dict:
+        """List requirement documents with optional filtering."""
+        params = {"page": page, "per_page": per_page}
+
+        if fields:
+            params["fields"] = ",".join(fields)
+        if search:
+            params["search"] = search
+
+        return await self.get("documents", params=params)
 
     async def search_documents(
         self,

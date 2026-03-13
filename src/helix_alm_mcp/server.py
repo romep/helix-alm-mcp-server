@@ -177,10 +177,30 @@ async def list_tools() -> list[Tool]:
         ),
         Tool(
             name="list_requirement_documents",
-            description="List all requirement documents in the project",
+            description="List requirement documents in the project with optional filtering and search",
             inputSchema={
                 "type": "object",
-                "properties": {},
+                "properties": {
+                    "search": {
+                        "type": "string",
+                        "description": "Search query using Helix ALM syntax (e.g., \"Name CONTAINS 'PRD'\")",
+                    },
+                    "fields": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Specific fields to return (e.g., ['Name', 'Description', 'Document Type'])",
+                    },
+                    "page": {
+                        "type": "integer",
+                        "description": "Page number for pagination (default: 1)",
+                        "default": 1,
+                    },
+                    "per_page": {
+                        "type": "integer",
+                        "description": "Number of items per page (default: 25, max: 300)",
+                        "default": 25,
+                    },
+                },
             },
         ),
         Tool(
@@ -365,7 +385,12 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
         elif name == "list_requirement_documents":
-            result = await helix_client.list_requirement_documents()
+            result = await helix_client.list_requirement_documents(
+                fields=arguments.get("fields"),
+                search=arguments.get("search"),
+                page=arguments.get("page", 1),
+                per_page=arguments.get("per_page", 25),
+            )
             return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
         elif name == "get_document_requirements":
