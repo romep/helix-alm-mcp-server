@@ -163,6 +163,16 @@ async def list_tools() -> list[Tool]:
                         "items": {"type": "string"},
                         "description": "Specific fields to return",
                     },
+                    "page": {
+                        "type": "integer",
+                        "description": "Page number for pagination (default: 1)",
+                        "default": 1,
+                    },
+                    "per_page": {
+                        "type": "integer",
+                        "description": "Number of items per page (default: 50, max: 300)",
+                        "default": 50,
+                    },
                 },
                 "required": ["query"],
             },
@@ -377,6 +387,8 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             result = await helix_client.list_requirements(
                 search=arguments["query"],
                 fields=arguments.get("fields"),
+                page=arguments.get("page", 1),
+                per_page=arguments.get("per_page", 50),
             )
             return [TextContent(type="text", text=json.dumps(result, indent=2))]
 

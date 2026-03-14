@@ -271,6 +271,37 @@ class TestSearchRequirementsTool:
         # Should find at least the "Order Look-up" requirement
         assert len(response["requirements"]) >= 1
 
+    @pytest.mark.asyncio
+    async def test_search_with_pagination(self):
+        """Search with pagination returns different results on page 2."""
+        query = "Summary CONTAINS 'e'"
+
+        # Fetch page 1
+        page1_result = await call_tool("search_requirements", {
+            "query": query, "page": 1, "per_page": 2
+        })
+        page1 = json.loads(page1_result[0].text)
+        assert "requirements" in page1
+        assert len(page1["requirements"]) == 2, (
+            "Need at least 3 matching results for this test; "
+            "page 1 should return exactly 2 requirements"
+        )
+        page1_ids = {r["id"] for r in page1["requirements"]}
+
+        # Fetch page 2
+        page2_result = await call_tool("search_requirements", {
+            "query": query, "page": 2, "per_page": 2
+        })
+        page2 = json.loads(page2_result[0].text)
+        assert "requirements" in page2
+        assert len(page2["requirements"]) >= 1
+        page2_ids = {r["id"] for r in page2["requirements"]}
+
+        # Pages must return different requirements
+        assert page1_ids.isdisjoint(page2_ids), (
+            f"Page 1 and page 2 returned overlapping IDs: {page1_ids & page2_ids}"
+        )
+
 
 class TestListRequirementsTool:
     """Tests for list_requirements tool handler."""
