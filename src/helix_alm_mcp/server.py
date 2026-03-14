@@ -7,6 +7,7 @@ from mcp.server import Server
 from mcp.server.stdio import stdio_server
 from mcp.types import Tool, TextContent
 
+from . import config
 from .client import helix_client, format_requirement_summary
 from .config import settings
 
@@ -36,13 +37,13 @@ async def list_tools() -> list[Tool]:
                     },
                     "page": {
                         "type": "integer",
-                        "description": "Page number for pagination (default: 1)",
-                        "default": 1,
+                        "description": f"Page number for pagination (default: {config.DEFAULT_PAGE})",
+                        "default": config.DEFAULT_PAGE,
                     },
                     "per_page": {
                         "type": "integer",
-                        "description": "Number of items per page (default: 50, max: 300)",
-                        "default": 50,
+                        "description": f"Number of items per page (default: {config.DEFAULT_REQUIREMENTS_PER_PAGE}, max: {config.MAX_PER_PAGE})",
+                        "default": config.DEFAULT_REQUIREMENTS_PER_PAGE,
                     },
                 },
             },
@@ -89,27 +90,8 @@ async def list_tools() -> list[Tool]:
                     "requirement_type": {
                         "type": "string",
                         "description": "Type of requirement to create",
-                        "enum": [
-                            "User Story",
-                            "Task",
-                            "Overview",
-                            "Functional Requirement",
-                            "Business Requirement",
-                            "Non-Functional Requirement",
-                            "Design Note",
-                            "Software  Requirements",
-                            "Security Requirement",
-                            "Technical Requirement",
-                            "Hardware Requirements",
-                            "Risk",
-                            "Performance Requirement",
-                            "Use Case",
-                            "Compliance Requirement",
-                            "Glossary",
-                            "Hazards",
-                            "Harms",
-                        ],
-                        "default": "Functional Requirement",
+                        "enum": list(config.REQUIREMENT_TYPE_MAP.keys()),
+                        "default": config.DEFAULT_REQUIREMENT_TYPE,
                     },
                 },
                 "required": ["summary"],
@@ -165,13 +147,13 @@ async def list_tools() -> list[Tool]:
                     },
                     "page": {
                         "type": "integer",
-                        "description": "Page number for pagination (default: 1)",
-                        "default": 1,
+                        "description": f"Page number for pagination (default: {config.DEFAULT_PAGE})",
+                        "default": config.DEFAULT_PAGE,
                     },
                     "per_page": {
                         "type": "integer",
-                        "description": "Number of items per page (default: 50, max: 300)",
-                        "default": 50,
+                        "description": f"Number of items per page (default: {config.DEFAULT_REQUIREMENTS_PER_PAGE}, max: {config.MAX_PER_PAGE})",
+                        "default": config.DEFAULT_REQUIREMENTS_PER_PAGE,
                     },
                 },
                 "required": ["query"],
@@ -202,13 +184,13 @@ async def list_tools() -> list[Tool]:
                     },
                     "page": {
                         "type": "integer",
-                        "description": "Page number for pagination (default: 1)",
-                        "default": 1,
+                        "description": f"Page number for pagination (default: {config.DEFAULT_PAGE})",
+                        "default": config.DEFAULT_PAGE,
                     },
                     "per_page": {
                         "type": "integer",
-                        "description": "Number of items per page (default: 25, max: 300)",
-                        "default": 25,
+                        "description": f"Number of items per page (default: {config.DEFAULT_DOCUMENTS_PER_PAGE}, max: {config.MAX_PER_PAGE})",
+                        "default": config.DEFAULT_DOCUMENTS_PER_PAGE,
                     },
                 },
             },
@@ -237,13 +219,13 @@ async def list_tools() -> list[Tool]:
                     },
                     "page": {
                         "type": "integer",
-                        "description": "Page number for pagination (default: 1)",
-                        "default": 1,
+                        "description": f"Page number for pagination (default: {config.DEFAULT_PAGE})",
+                        "default": config.DEFAULT_PAGE,
                     },
                     "per_page": {
                         "type": "integer",
-                        "description": "Number of items per page (default: 50)",
-                        "default": 50,
+                        "description": f"Number of items per page (default: {config.DEFAULT_REQUIREMENTS_PER_PAGE})",
+                        "default": config.DEFAULT_REQUIREMENTS_PER_PAGE,
                     },
                 },
             },
@@ -264,9 +246,9 @@ async def list_tools() -> list[Tool]:
                     },
                     "document_type": {
                         "type": "string",
-                        "description": "Document type: 'PRD' (default), 'MRD', 'FMEA', or 'EPIC'",
-                        "enum": ["PRD", "MRD", "FMEA", "EPIC"],
-                        "default": "PRD",
+                        "description": f"Document type: {', '.join(repr(k) for k in config.DOCUMENT_TYPE_MAP)} (default: {config.DEFAULT_DOCUMENT_TYPE!r})",
+                        "enum": list(config.DOCUMENT_TYPE_MAP.keys()),
+                        "default": config.DEFAULT_DOCUMENT_TYPE,
                     },
                 },
                 "required": ["name"],
@@ -324,8 +306,8 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             result = await helix_client.list_requirements(
                 fields=arguments.get("fields"),
                 search=arguments.get("search"),
-                page=arguments.get("page", 1),
-                per_page=arguments.get("per_page", 50),
+                page=arguments.get("page", config.DEFAULT_PAGE),
+                per_page=arguments.get("per_page", config.DEFAULT_REQUIREMENTS_PER_PAGE),
             )
             return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
@@ -339,29 +321,8 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
         elif name == "create_requirement":
-            # Map requirement type names to IDs
-            req_type_map = {
-                "User Story": 4,
-                "Task": 5,
-                "Overview": 6,
-                "Functional Requirement": 7,
-                "Business Requirement": 8,
-                "Non-Functional Requirement": 9,
-                "Design Note": 10,
-                "Software  Requirements": 11,
-                "Security Requirement": 12,
-                "Technical Requirement": 13,
-                "Hardware Requirements": 14,
-                "Risk": 15,
-                "Performance Requirement": 17,
-                "Use Case": 18,
-                "Compliance Requirement": 19,
-                "Glossary": 20,
-                "Hazards": 22,
-                "Harms": 23,
-            }
-            req_type = arguments.get("requirement_type", "Functional Requirement")
-            req_type_id = req_type_map.get(req_type, 7)
+            req_type = arguments.get("requirement_type", config.DEFAULT_REQUIREMENT_TYPE)
+            req_type_id = config.REQUIREMENT_TYPE_MAP.get(req_type, config.DEFAULT_REQUIREMENT_TYPE_ID)
 
             result = await helix_client.create_requirement(
                 summary=arguments["summary"],
@@ -387,8 +348,8 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             result = await helix_client.list_requirements(
                 search=arguments["query"],
                 fields=arguments.get("fields"),
-                page=arguments.get("page", 1),
-                per_page=arguments.get("per_page", 50),
+                page=arguments.get("page", config.DEFAULT_PAGE),
+                per_page=arguments.get("per_page", config.DEFAULT_REQUIREMENTS_PER_PAGE),
             )
             return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
@@ -400,8 +361,8 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             result = await helix_client.list_requirement_documents(
                 fields=arguments.get("fields"),
                 search=arguments.get("search"),
-                page=arguments.get("page", 1),
-                per_page=arguments.get("per_page", 25),
+                page=arguments.get("page", config.DEFAULT_PAGE),
+                per_page=arguments.get("per_page", config.DEFAULT_DOCUMENTS_PER_PAGE),
             )
             return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
@@ -413,21 +374,14 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             )
             result = await helix_client.get_document_requirements(
                 document_id=doc_id,
-                page=arguments.get("page", 1),
-                per_page=arguments.get("per_page", 50),
+                page=arguments.get("page", config.DEFAULT_PAGE),
+                per_page=arguments.get("per_page", config.DEFAULT_REQUIREMENTS_PER_PAGE),
             )
             return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
         elif name == "create_requirement_document":
-            # Map document type names to IDs
-            doc_type_map = {
-                "PRD": 86,
-                "MRD": 87,
-                "FMEA": 98,
-                "EPIC": 132,
-            }
-            doc_type = arguments.get("document_type", "PRD")
-            doc_type_id = doc_type_map.get(doc_type, 86)
+            doc_type = arguments.get("document_type", config.DEFAULT_DOCUMENT_TYPE)
+            doc_type_id = config.DOCUMENT_TYPE_MAP.get(doc_type, config.DEFAULT_DOCUMENT_TYPE_ID)
 
             result = await helix_client.create_requirement_document(
                 name=arguments["name"],

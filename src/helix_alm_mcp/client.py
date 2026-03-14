@@ -9,6 +9,7 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
+from . import config
 from .config import settings
 
 
@@ -26,7 +27,7 @@ class HelixALMClient:
         if self._http_client is None:
             self._http_client = httpx.AsyncClient(
                 verify=False,  # Helix ALM often uses self-signed certs
-                timeout=30.0,
+                timeout=config.HTTP_TIMEOUT,
             )
         return self._http_client
 
@@ -98,7 +99,7 @@ class HelixALMClient:
         if retry_after:
             delay = float(retry_after)
         else:
-            delay = settings.rate_limit_retry_delay * (2 ** attempt)
+            delay = settings.rate_limit_retry_delay * (config.BACKOFF_MULTIPLIER ** attempt)
         logger.warning(
             "Rate limited (429). Retry %d/%d in %.1fs",
             attempt + 1, settings.rate_limit_retry_max, delay,
@@ -177,8 +178,8 @@ class HelixALMClient:
         self,
         fields: list[str] | None = None,
         search: str | None = None,
-        page: int = 1,
-        per_page: int = 50,
+        page: int = config.DEFAULT_PAGE,
+        per_page: int = config.DEFAULT_REQUIREMENTS_PER_PAGE,
     ) -> dict:
         """List requirements with optional filtering."""
         params = {"page": page, "per_page": per_page}
@@ -198,7 +199,7 @@ class HelixALMClient:
         self,
         summary: str,
         description: str | None = None,
-        requirement_type_id: int = 7,  # Default to Functional Requirement
+        requirement_type_id: int = config.DEFAULT_REQUIREMENT_TYPE_ID,
     ) -> dict:
         """Create a new requirement.
 
@@ -214,12 +215,12 @@ class HelixALMClient:
         """
         # Build the fields array
         fields = [
-            {"id": 2, "label": "Summary", "type": "string", "string": summary},
+            {"id": config.FIELD_ID_REQ_SUMMARY, "label": "Summary", "type": "string", "string": summary},
         ]
 
         if description:
             fields.append({
-                "id": 7,
+                "id": config.FIELD_ID_REQ_DESCRIPTION,
                 "label": "Description",
                 "type": "formattedString",
                 "formattedString": {"isFormatted": True, "text": description, "inlineImages": []},
@@ -258,11 +259,11 @@ class HelixALMClient:
         fields = []
         if summary is not None:
             fields.append(
-                {"id": 2, "label": "Summary", "type": "string", "string": summary}
+                {"id": config.FIELD_ID_REQ_SUMMARY, "label": "Summary", "type": "string", "string": summary}
             )
         if description is not None:
             fields.append({
-                "id": 7,
+                "id": config.FIELD_ID_REQ_DESCRIPTION,
                 "label": "Description",
                 "type": "formattedString",
                 "formattedString": {"isFormatted": True, "text": description, "inlineImages": []},
@@ -321,8 +322,8 @@ class HelixALMClient:
         self,
         fields: list[str] | None = None,
         search: str | None = None,
-        page: int = 1,
-        per_page: int = 25,
+        page: int = config.DEFAULT_PAGE,
+        per_page: int = config.DEFAULT_DOCUMENTS_PER_PAGE,
     ) -> dict:
         """List requirement documents with optional filtering."""
         params = {"page": page, "per_page": per_page}
@@ -338,8 +339,8 @@ class HelixALMClient:
         self,
         search: str | None = None,
         fields: list[str] | None = None,
-        page: int = 1,
-        per_page: int = 50,
+        page: int = config.DEFAULT_PAGE,
+        per_page: int = config.DEFAULT_REQUIREMENTS_PER_PAGE,
     ) -> dict:
         """Search documents using POST endpoint with body parameters."""
         data: dict = {"page": page, "per_page": per_page}
@@ -406,7 +407,7 @@ class HelixALMClient:
         self,
         name: str,
         description: str | None = None,
-        document_type_id: int = 86,  # Default to PRD
+        document_type_id: int = config.DEFAULT_DOCUMENT_TYPE_ID,
     ) -> dict:
         """Create a new requirement document.
 
@@ -418,12 +419,12 @@ class HelixALMClient:
         """
         # Build the fields array
         fields = [
-            {"id": 2, "label": "Name", "type": "string", "string": name},
-            {"id": 301, "label": "Document Type", "type": "menuItem", "menuItem": {"id": document_type_id}},
+            {"id": config.FIELD_ID_DOC_NAME, "label": "Name", "type": "string", "string": name},
+            {"id": config.FIELD_ID_DOC_TYPE, "label": "Document Type", "type": "menuItem", "menuItem": {"id": document_type_id}},
         ]
         if description:
             fields.append({
-                "id": 3,
+                "id": config.FIELD_ID_DOC_DESCRIPTION,
                 "label": "Description",
                 "type": "formattedString",
                 "formattedString": {"isFormatted": True, "text": description, "inlineImages": []},
@@ -440,8 +441,8 @@ class HelixALMClient:
     async def get_document_requirements(
         self,
         document_id: int,
-        page: int = 1,
-        per_page: int = 50,
+        page: int = config.DEFAULT_PAGE,
+        per_page: int = config.DEFAULT_REQUIREMENTS_PER_PAGE,
     ) -> dict:
         """Get requirements in a document.
 

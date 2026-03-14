@@ -4,6 +4,62 @@ from pydantic_settings import BaseSettings
 from pydantic import Field
 
 
+# --- Pagination Defaults ---
+DEFAULT_PAGE = 1
+DEFAULT_REQUIREMENTS_PER_PAGE = 50
+DEFAULT_DOCUMENTS_PER_PAGE = 25
+MAX_PER_PAGE = 300
+
+# --- Requirement Field IDs ---
+# Used when building API payloads for create/update operations
+FIELD_ID_REQ_SUMMARY = 2
+FIELD_ID_REQ_DESCRIPTION = 7
+
+# --- Document Field IDs ---
+FIELD_ID_DOC_NAME = 2
+FIELD_ID_DOC_DESCRIPTION = 3
+FIELD_ID_DOC_TYPE = 301
+
+# --- Requirement Type ID Mapping ---
+# Maps user-friendly type names to Helix ALM internal IDs
+REQUIREMENT_TYPE_MAP = {
+    "User Story": 4,
+    "Task": 5,
+    "Overview": 6,
+    "Functional Requirement": 7,
+    "Business Requirement": 8,
+    "Non-Functional Requirement": 9,
+    "Design Note": 10,
+    "Software  Requirements": 11,
+    "Security Requirement": 12,
+    "Technical Requirement": 13,
+    "Hardware Requirements": 14,
+    "Risk": 15,
+    "Performance Requirement": 17,
+    "Use Case": 18,
+    "Compliance Requirement": 19,
+    "Glossary": 20,
+    "Hazards": 22,
+    "Harms": 23,
+}
+DEFAULT_REQUIREMENT_TYPE = "Functional Requirement"
+DEFAULT_REQUIREMENT_TYPE_ID = REQUIREMENT_TYPE_MAP[DEFAULT_REQUIREMENT_TYPE]
+
+# --- Document Type ID Mapping ---
+DOCUMENT_TYPE_MAP = {
+    "PRD": 86,
+    "MRD": 87,
+    "FMEA": 98,
+    "EPIC": 132,
+}
+DEFAULT_DOCUMENT_TYPE = "PRD"
+DEFAULT_DOCUMENT_TYPE_ID = DOCUMENT_TYPE_MAP[DEFAULT_DOCUMENT_TYPE]
+
+# --- HTTP Client Settings ---
+HTTP_TIMEOUT = 30.0
+BACKOFF_MULTIPLIER = 2
+
+
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
