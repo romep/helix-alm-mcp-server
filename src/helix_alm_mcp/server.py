@@ -22,7 +22,9 @@ async def list_tools() -> list[Tool]:
     return [
         Tool(
             name="list_requirements",
-            description="List requirements from Helix ALM with optional filtering and search",
+            description="""List requirements from Helix ALM with optional filtering and search.
+
+Results are paginated. Use 'search' to filter before paging (e.g., "Status = 'Approved'"). Use 'fields' to limit returned data. The response includes a 'paging' object with totalCount and totalPages.""",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -132,7 +134,9 @@ async def list_tools() -> list[Tool]:
         ),
         Tool(
             name="search_requirements",
-            description="Search requirements using Helix ALM query syntax. Supports operators: = (equals), != (not equals), CONTAINS, >, <, >=, <=. Chain with AND, OR, NOT.",
+            description="""Search requirements using Helix ALM query syntax. Supports operators: = (equals), != (not equals), CONTAINS, >, <, >=, <=. Chain with AND, OR, NOT.
+
+Results are paginated. The response includes a 'paging' object with totalCount and totalPages.""",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -169,7 +173,9 @@ async def list_tools() -> list[Tool]:
         ),
         Tool(
             name="list_requirement_documents",
-            description="List requirement documents in the project with optional filtering and search",
+            description="""List requirement documents in the project with optional filtering and search.
+
+Results are paginated. Use 'search' to filter (e.g., "Name CONTAINS 'PRD'"). Use 'fields' to limit returned data. The response includes a 'paging' object with totalCount and totalPages.""",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -197,7 +203,9 @@ async def list_tools() -> list[Tool]:
         ),
         Tool(
             name="get_document_requirements",
-            description="""Get all requirements in a specific requirement document. Provide exactly one identifier (record_id, tag, or number) for the document.
+            description="""Get requirements in a specific requirement document. Provide exactly one identifier (record_id, tag, or number) for the document.
+
+Results are paginated. Large documents may span multiple pages — check the 'paging' object in the response for totalCount and totalPages.
 
 - Use 'tag' when the user references a document like "RD-108" (visible in Helix ALM UI)
 - Use 'number' when the user references just the number like "108" (visible in Helix ALM UI)
