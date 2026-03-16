@@ -43,6 +43,11 @@ env/
 .coverage
 htmlcov/
 
+# Promptfoo eval testing
+.promptfoo/
+promptfoo-output/
+run_mcp_server.sh
+
 # Claude Code local settings (machine-specific, not useful to others)
 .claude/
 

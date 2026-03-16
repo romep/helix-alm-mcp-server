@@ -1,0 +1,118 @@
+# Helix ALM MCP Server - Direct MCP Tool Tests
+# Tests server tools directly without an LLM (zero cost, fast)
+#
+# Run:  promptfoo eval
+# View: promptfoo view
+#
+# For LLM-based tool discovery/selection tests, see promptfoo-llm.yaml:
+#   promptfoo eval -c promptfoo-llm.yaml
+
+description: "Helix ALM MCP Server - Direct Tool Tests"
+
+providers:
+  - id: mcp
+    label: direct-mcp
+    config:
+      enabled: true
+      verbose: false
+      servers:
+        - command: /Users/dragons/HelixALM_MCP_Server/run_mcp_server.sh
+          args: []
+      timeout: 30000
+
+defaultTest:
+  options:
+    provider:
+      timeout: 30000
+
+prompts:
+  - "{{prompt}}"
+
+tests:
+  # =============================================
+  # Tool Functionality Tests
+  # =============================================
+  - description: "List requirements with pagination"
+    vars:
+      prompt: '{"tool": "list_requirements", "args": {"per_page": 5, "page": 1}}'
+    assert:
+      - type: not-contains
+        value: "Error:"
+      - type: contains
+        value: "totalCount"
+      - type: contains
+        value: "requirements"
+
+  - description: "Get requirement types"
+    vars:
+      prompt: '{"tool": "get_requirement_types", "args": {}}'
+    assert:
+      - type: not-contains
+        value: "Error:"
+      - type: contains
+        value: "requirementTypesData"
+
+  - description: "List requirement documents"
+    vars:
+      prompt: '{"tool": "list_requirement_documents", "args": {"per_page": 5}}'
+    assert:
+      - type: not-contains
+        value: "Error:"
+      - type: contains
+        value: "documents"
+
+  - description: "Search requirements"
+    vars:
+      prompt: '{"tool": "search_requirements", "args": {"query": "Summary CONTAINS ''login''"}}'
+    assert:
+      - type: not-contains
+        value: "Error:"
+      - type: contains
+        value: "totalCount"
+
+  - description: "Get requirement by tag"
+    vars:
+      prompt: '{"tool": "get_requirement", "args": {"tag": "BR-1960"}}'
+    assert:
+      - type: not-contains
+        value: "Error:"
+      - type: contains
+        value: "1960"
+
+  - description: "Get document requirements"
+    vars:
+      prompt: '{"tool": "get_document_requirements", "args": {"number": 108}}'
+    assert:
+      - type: not-contains
+        value: "Error:"
+
+  # =============================================
+  # Error Handling Tests
+  # =============================================
+  - description: "Error - Get nonexistent requirement"
+    vars:
+      prompt: '{"tool": "get_requirement", "args": {"tag": "XYZ-99999"}}'
+    assert:
+      - type: contains
+        value: "Error"
+
+  - description: "Error - Search with empty query"
+    vars:
+      prompt: '{"tool": "search_requirements", "args": {"query": ""}}'
+    assert:
+      - type: not-contains
+        value: "Traceback"
+
+  - description: "Error - Get requirement with no identifier"
+    vars:
+      prompt: '{"tool": "get_requirement", "args": {}}'
+    assert:
+      - type: contains
+        value: "Error"
+
+  - description: "Error - Create requirement missing summary"
+    vars:
+      prompt: '{"tool": "create_requirement", "args": {}}'
+    assert:
+      - type: regex
+        value: "Error|required|validation"

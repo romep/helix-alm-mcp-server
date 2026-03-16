@@ -1,0 +1,158 @@
+# Helix ALM MCP Server - LLM Tool Discovery & Selection Tests
+# Uses Ollama (qwen2.5:32b) via OpenAI-compatible API — zero cost
+#
+# Prerequisites: Ollama must be running with qwen2.5:32b pulled
+# Run:  promptfoo eval -c promptfoo-llm.yaml
+# View: promptfoo view
+#
+# For direct tool tests (no LLM), see promptfooconfig.yaml:
+#   promptfoo eval
+
+description: "Helix ALM MCP Server - LLM Tool Discovery & Selection"
+
+providers:
+  - id: openai:chat:qwen2.5:32b
+    label: ollama-qwen2.5-32b
+    config:
+      apiBaseUrl: http://localhost:11434/v1
+      apiKey: ollama
+      temperature: 0
+      mcp:
+        enabled: true
+        server:
+          command: /Users/dragons/HelixALM_MCP_Server/run_mcp_server.sh
+          args: []
+
+defaultTest:
+  options:
+    provider:
+      timeout: 120000
+
+prompts:
+  - "{{prompt}}"
+
+tests:
+  # =============================================
+  # CATEGORY 1: Tool Discovery
+  # =============================================
+  - description: "Discovery - List all available tools"
+    vars:
+      prompt: "What tools do you have available? List them all."
+    assert:
+      - type: contains
+        value: list_requirements
+      - type: contains
+        value: create_requirement
+      - type: contains
+        value: search_requirements
+
+  - description: "Discovery - Requirements management capabilities"
+    vars:
+      prompt: "Can you help me manage requirements? What can you do?"
+    assert:
+      - type: icontains
+        value: requirement
+      - type: regex
+        value: "list|search|create|update"
+
+  - description: "Discovery - Document capabilities"
+    vars:
+      prompt: "What can you do with requirement documents?"
+    assert:
+      - type: icontains
+        value: document
+      - type: regex
+        value: "list|create|add"
+
+  # =============================================
+  # CATEGORY 2: Tool Selection
+  # =============================================
+  - description: "Selection - List all requirements"
+    vars:
+      prompt: "List all requirements in the project."
+    assert:
+      - type: not-contains
+        value: "Error:"
+
+  - description: "Selection - Get requirement by tag"
+    vars:
+      prompt: "Find requirement BR-1960 and show me its details."
+    assert:
+      - type: not-contains
+        value: "Error:"
+      - type: regex
+        value: "1960|BR-1960"
+
+  - description: "Selection - Search for requirements"
+    vars:
+      prompt: "Search for requirements that mention 'login' in their summary."
+    assert:
+      - type: not-contains
+        value: "Error:"
+
+  - description: "Selection - List requirement documents"
+    vars:
+      prompt: "Show me all the requirement documents in the project."
+    assert:
+      - type: not-contains
+        value: "Error:"
+
+  - description: "Selection - Get requirement types"
+    vars:
+      prompt: "What types of requirements are available in the system?"
+    assert:
+      - type: not-contains
+        value: "Error:"
+      - type: regex
+        value: "User Story|Functional Requirement|Business Requirement"
+
+  - description: "Selection - Create a requirement"
+    vars:
+      prompt: "Create a new requirement called 'Eval Test - Login Page Validation'."
+    assert:
+      - type: not-contains
+        value: "Error:"
+      - type: contains
+        value: "requirements"
+
+  # =============================================
+  # CATEGORY 3: Parameter Extraction
+  # =============================================
+  - description: "Params - Tag identifier extraction"
+    vars:
+      prompt: "Get me the requirement with tag BR-1960."
+    assert:
+      - type: not-contains
+        value: "Error:"
+      - type: regex
+        value: "1960|BR-1960"
+
+  - description: "Params - Pagination parameters"
+    vars:
+      prompt: "List requirements, page 2, showing 10 per page."
+    assert:
+      - type: not-contains
+        value: "Error:"
+
+  - description: "Params - Search query construction"
+    vars:
+      prompt: "Search for requirements where the summary contains 'authentication'."
+    assert:
+      - type: not-contains
+        value: "Error:"
+
+  - description: "Params - Requirement type selection"
+    vars:
+      prompt: "Create a Functional Requirement called 'Eval Test - Input Validation Rules'."
+    assert:
+      - type: not-contains
+        value: "Error:"
+      - type: contains
+        value: "requirements"
+
+  - description: "Params - Update with identifier and fields"
+    vars:
+      prompt: "Update requirement number 1960 and change its summary to 'Eval Test - Updated Summary'."
+    assert:
+      - type: not-contains
+        value: "Error:"
