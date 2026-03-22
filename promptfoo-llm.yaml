@@ -10,23 +10,7 @@
 
 description: "Helix ALM MCP Server - LLM Tool Discovery & Selection"
 
-providers:
-  - id: openai:chat:qwen2.5:32b
-    label: ollama-qwen2.5-32b
-    config:
-      apiBaseUrl: http://localhost:11434/v1
-      apiKey: ollama
-      temperature: 0
-      mcp:
-        enabled: true
-        server:
-          command: /Users/dragons/HelixALM_MCP_Server/run_mcp_server.sh
-          args: []
 
-defaultTest:
-  options:
-    provider:
-      timeout: 120000
 
 prompts:
   - "{{prompt}}"
@@ -39,12 +23,20 @@ tests:
     vars:
       prompt: "What tools do you have available? List them all."
     assert:
-      - type: contains
-        value: list_requirements
-      - type: contains
-        value: create_requirement
-      - type: contains
-        value: search_requirements
+      - type: icontains-all
+        value:
+          - list_requirements
+          - get_requirement
+          - create_requirement
+          - update_requirement
+          - search_requirements
+          - get_requirement_types
+          - list_requirement_documents
+          - get_document_requirements
+          - create_requirement_document
+          - add_requirements_to_document
+      - type: not-icontains
+        value: delete
 
   - description: "Discovery - Requirements management capabilities"
     vars:
@@ -54,6 +46,10 @@ tests:
         value: requirement
       - type: regex
         value: "list|search|create|update"
+      - type: not-icontains
+        value: delete
+      - type: not-icontains
+        value: remove
 
   - description: "Discovery - Document capabilities"
     vars:
@@ -63,6 +59,18 @@ tests:
         value: document
       - type: regex
         value: "list|create|add"
+      - type: not-icontains
+        value: delete
+      - type: not-icontains
+        value: remove
+      - type: llm-rubric
+        value: >
+          The response should ONLY describe capabilities available in these 10 tools:
+          list_requirements, get_requirement, create_requirement, update_requirement,
+          search_requirements, get_requirement_types, list_requirement_documents,
+          get_document_requirements, create_requirement_document, add_requirements_to_document.
+          It must NOT claim abilities to delete or remove documents.
+          It must NOT speculate about capabilities that are not provided by these tools.
 
   # =============================================
   # CATEGORY 2: Tool Selection
