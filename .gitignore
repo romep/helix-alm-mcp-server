@@ -47,6 +47,7 @@ htmlcov/
 .promptfoo/
 promptfoo-output/
 run_mcp_server.sh
+tests/eval-*.json
 
 # Claude Code local settings (machine-specific, not useful to others)
 .claude/

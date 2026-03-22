@@ -181,37 +181,70 @@ tests:
     vars:
       prompt: "Get me the requirement with tag BR-1960."
     assert:
+      - type: not-icontains
+        value: "validation error"
       - type: not-contains
         value: "Error:"
       - type: regex
         value: "1960|BR-1960"
+      - type: icontains
+        value: "Business Requirement"
 
   - description: "Params - Pagination parameters"
     vars:
       prompt: "List requirements, page 2, showing 10 per page."
     assert:
+      - type: not-icontains
+        value: "validation error"
       - type: not-contains
         value: "Error:"
+      - type: icontains
+        value: "totalCount"
+      - type: regex
+        value: "\"page\": 2|page.*2"
 
   - description: "Params - Search query construction"
     vars:
       prompt: "Search for requirements where the summary contains 'authentication'."
     assert:
+      - type: not-icontains
+        value: "validation error"
       - type: not-contains
         value: "Error:"
+      - type: icontains
+        value: "totalCount"
 
   - description: "Params - Requirement type selection"
     vars:
       prompt: "Create a Functional Requirement called 'Eval Test - Input Validation Rules'."
     assert:
+      - type: not-icontains
+        value: "validation error"
       - type: not-contains
         value: "Error:"
-      - type: contains
-        value: "requirements"
+      - type: icontains
+        value: "Functional Requirement"
+      - type: regex
+        value: "/requirements/\\d+/"
 
   - description: "Params - Update with identifier and fields"
     vars:
       prompt: "Update requirement number 1960 and change its summary to 'Eval Test - Updated Summary'."
     assert:
+      - type: not-icontains
+        value: "validation error"
       - type: not-contains
         value: "Error:"
+      - type: icontains
+        value: "Updated Summary"
+
+  - description: "Cleanup - Restore BR-1960 summary"
+    vars:
+      prompt: "Update requirement number 1960 and change its summary to 'Business Need: Online Customer Order Tracking System'."
+    assert:
+      - type: not-icontains
+        value: "validation error"
+      - type: not-contains
+        value: "Error:"
+      - type: icontains
+        value: "Online Customer Order Tracking"
