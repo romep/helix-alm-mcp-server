@@ -238,6 +238,29 @@ tests:
       - type: icontains
         value: "Updated Summary"
 
+  # =============================================
+  # CATEGORY 4: Multi-step Behavior
+  # =============================================
+  - description: "Behavior - Pagination follow-through"
+    vars:
+      prompt: "List requirements with 2 per page. Get the first page, then get the second page. Show me both sets of results."
+    assert:
+      - type: not-icontains
+        value: "validation error"
+      - type: not-contains
+        value: "Error:"
+      - type: icontains
+        value: "totalCount"
+      - type: llm-rubric
+        value: >
+          The response must show results from two different pages of requirements.
+          It should have called the list_requirements tool at least twice with
+          different page numbers. The results from page 1 and page 2 should
+          contain different requirements.
+
+  # =============================================
+  # CATEGORY 5: Cleanup
+  # =============================================
   - description: "Cleanup - Restore BR-1960 summary"
     vars:
       prompt: "Update requirement number 1960 and change its summary to 'Business Need: Online Customer Order Tracking System'."
