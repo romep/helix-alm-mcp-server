@@ -10,7 +10,28 @@
 
 description: "Helix ALM MCP Server - LLM Tool Discovery & Selection"
 
+providers:
+  - id: openai:chat:qwen2.5:32b
+    label: ollama-qwen2.5-32b
+    config:
+      apiBaseUrl: http://localhost:11434/v1
+      apiKey: ollama
+      temperature: 0
+      mcp:
+        enabled: true
+        server:
+          command: /Users/dragons/HelixALM_MCP_Server/run_mcp_server.sh
+          args: []
 
+defaultTest:
+  options:
+    provider:
+      id: openai:chat:qwen2.5:32b
+      config:
+        apiBaseUrl: http://localhost:11434/v1
+        apiKey: ollama
+        temperature: 0
+      timeout: 120000
 
 prompts:
   - "{{prompt}}"
@@ -79,36 +100,62 @@ tests:
     vars:
       prompt: "List all requirements in the project."
     assert:
+      - type: not-icontains
+        value: "validation error"
       - type: not-contains
         value: "Error:"
+      - type: icontains
+        value: "totalCount"
+      - type: icontains
+        value: "requirements"
 
   - description: "Selection - Get requirement by tag"
     vars:
       prompt: "Find requirement BR-1960 and show me its details."
     assert:
+      - type: not-icontains
+        value: "validation error"
       - type: not-contains
         value: "Error:"
       - type: regex
         value: "1960|BR-1960"
+      - type: icontains
+        value: "Business Requirement"
+      - type: icontains
+        value: "Online Customer Order Tracking"
 
   - description: "Selection - Search for requirements"
     vars:
       prompt: "Search for requirements that mention 'login' in their summary."
     assert:
+      - type: not-icontains
+        value: "validation error"
       - type: not-contains
         value: "Error:"
+      - type: icontains
+        value: "totalCount"
+      - type: icontains
+        value: "login"
 
   - description: "Selection - List requirement documents"
     vars:
       prompt: "Show me all the requirement documents in the project."
     assert:
+      - type: not-icontains
+        value: "validation error"
       - type: not-contains
         value: "Error:"
+      - type: icontains
+        value: "totalCount"
+      - type: regex
+        value: "Headphone|MRD|Test"
 
   - description: "Selection - Get requirement types"
     vars:
       prompt: "What types of requirements are available in the system?"
     assert:
+      - type: not-icontains
+        value: "validation error"
       - type: not-contains
         value: "Error:"
       - type: regex
@@ -118,10 +165,14 @@ tests:
     vars:
       prompt: "Create a new requirement called 'Eval Test - Login Page Validation'."
     assert:
+      - type: not-icontains
+        value: "validation error"
       - type: not-contains
         value: "Error:"
-      - type: contains
+      - type: icontains
         value: "requirements"
+      - type: regex
+        value: "/requirements/\\d+/"
 
   # =============================================
   # CATEGORY 3: Parameter Extraction
