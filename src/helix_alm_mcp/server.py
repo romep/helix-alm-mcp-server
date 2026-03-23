@@ -101,7 +101,7 @@ Results are paginated. Use 'search' to filter before paging (e.g., "Status = 'Ap
         ),
         Tool(
             name="update_requirement",
-            description="""Update an existing requirement. Provide exactly one identifier (record_id, tag, or number) plus the fields to update.
+            description="""Update an existing requirement's summary and/or description. Only these two fields can currently be updated through this tool. Provide exactly one identifier (record_id, tag, or number) plus the fields to update.
 
 - Use 'tag' when the user references a requirement like "US-2195" (visible in Helix ALM UI)
 - Use 'number' when the user references just the number like "2195" (visible in Helix ALM UI)
@@ -175,7 +175,9 @@ Results are paginated. The response includes a 'paging' object with totalCount a
             name="list_requirement_documents",
             description="""List requirement documents in the project with optional filtering and search.
 
-Results are paginated. Use 'search' to filter (e.g., "Name CONTAINS 'PRD'"). Use 'fields' to limit returned data. The response includes a 'paging' object with totalCount and totalPages.""",
+Results are paginated. Use 'search' to filter (e.g., "Name CONTAINS 'PRD'"). Use 'fields' to limit returned data. The response includes a 'paging' object with totalCount and totalPages.
+
+Note: Document operations are limited to listing, viewing contents, creating, and adding requirements. Delete and update operations for documents are not currently supported.""",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -240,7 +242,7 @@ Results are paginated. Large documents may span multiple pages — check the 'pa
         ),
         Tool(
             name="create_requirement_document",
-            description="Create a new requirement document in Helix ALM",
+            description="Create a new requirement document in Helix ALM. Note: Once created, documents cannot currently be updated or deleted through this server.",
             inputSchema={
                 "type": "object",
                 "properties": {
