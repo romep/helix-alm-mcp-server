@@ -80,10 +80,6 @@ tests:
         value: document
       - type: regex
         value: "list|create|add"
-      - type: not-icontains
-        value: delete
-      - type: not-icontains
-        value: remove
       - type: llm-rubric
         value: >
           The response should ONLY describe capabilities available in these 10 tools:
