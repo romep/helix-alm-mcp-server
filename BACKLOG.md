@@ -188,6 +188,46 @@ run_report(report_id: int) -> dict  # Execute report and return results
 
 ---
 
+### 12. Limited Update Fields
+
+**Current Behavior:** `update_requirement` only supports updating Summary and Description fields.
+
+**Limitation:** The Helix ALM API supports updating additional fields, but this MCP server only exposes two. Users may expect to update other fields like custom fields.
+
+**Note:** Status is computed via workflow rules in Helix ALM and is not directly editable through field updates.
+
+**Future Enhancement:**
+```python
+update_requirement(
+    ...,
+    custom_fields: dict[str, Any]  # Support arbitrary field updates by field name or ID
+)
+```
+
+---
+
+### 13. No Document Update Support
+
+**Current Behavior:** Requirement documents cannot be updated after creation. There is no `update_requirement_document` tool.
+
+**Limitation:** Users cannot modify a document's name, description, or type through this MCP server after creating it.
+
+**Workaround:** Use the Helix ALM desktop client or web UI to update document details.
+
+**Future Enhancement:**
+```python
+update_requirement_document(
+    record_id: int | None = None,
+    tag: str | None = None,
+    number: int | None = None,
+    name: str | None = None,
+    description: str | None = None,
+    document_type: str | None = None,
+)
+```
+
+---
+
 ## Ideas & Suggestions
 
 *Space for capturing ideas that come up during development or user feedback.*
