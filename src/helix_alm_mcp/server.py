@@ -29,11 +29,11 @@ Results are paginated. Use 'search' to filter before paging (e.g., "Status = 'Ap
                 "type": "object",
                 "properties": {
                     "search": {
-                        "type": "string",
+                        "type": ["string", "null"],
                         "description": "Search query using Helix ALM syntax (e.g., \"Summary CONTAINS 'login'\" or \"Status = 'Approved'\")",
                     },
                     "fields": {
-                        "type": "array",
+                        "type": ["array", "null"],
                         "items": {"type": "string"},
                         "description": "Specific fields to return (e.g., ['Summary', 'Description', 'Status'])",
                     },
@@ -65,7 +65,7 @@ Results are paginated. Use 'search' to filter before paging (e.g., "Status = 'Ap
                         "description": "Internal record ID returned by API operations like create_requirement. Use this for programmatic workflows.",
                     },
                     "tag": {
-                        "type": "string",
+                        "type": ["string", "null"],
                         "description": "User-visible tag with type prefix, e.g., 'US-2195' for User Story, 'FR-100' for Functional Requirement. This is what users see in the Helix ALM interface.",
                     },
                     "number": {
@@ -86,7 +86,7 @@ Results are paginated. Use 'search' to filter before paging (e.g., "Status = 'Ap
                         "description": "The summary/title of the requirement",
                     },
                     "description": {
-                        "type": "string",
+                        "type": ["string", "null"],
                         "description": "Detailed description of the requirement (supports HTML formatting)",
                     },
                     "requirement_type": {
@@ -114,7 +114,7 @@ Results are paginated. Use 'search' to filter before paging (e.g., "Status = 'Ap
                         "description": "Internal record ID returned by API operations. Use this for programmatic workflows.",
                     },
                     "tag": {
-                        "type": "string",
+                        "type": ["string", "null"],
                         "description": "User-visible tag with type prefix, e.g., 'US-2195'. This is what users see in the Helix ALM interface.",
                     },
                     "number": {
@@ -122,11 +122,11 @@ Results are paginated. Use 'search' to filter before paging (e.g., "Status = 'Ap
                         "description": "User-visible item number without prefix, e.g., 2195.",
                     },
                     "summary": {
-                        "type": "string",
+                        "type": ["string", "null"],
                         "description": "New summary/title for the requirement",
                     },
                     "description": {
-                        "type": "string",
+                        "type": ["string", "null"],
                         "description": "New description for the requirement",
                     },
                 },
@@ -145,7 +145,7 @@ Results are paginated. The response includes a 'paging' object with totalCount a
                         "description": "Search query (e.g., \"Summary CONTAINS 'auth' AND Status = 'Approved'\")",
                     },
                     "fields": {
-                        "type": "array",
+                        "type": ["array", "null"],
                         "items": {"type": "string"},
                         "description": "Specific fields to return",
                     },
@@ -182,11 +182,11 @@ Note: Document operations are limited to listing, viewing contents, creating, an
                 "type": "object",
                 "properties": {
                     "search": {
-                        "type": "string",
+                        "type": ["string", "null"],
                         "description": "Search query using Helix ALM syntax (e.g., \"Name CONTAINS 'PRD'\")",
                     },
                     "fields": {
-                        "type": "array",
+                        "type": ["array", "null"],
                         "items": {"type": "string"},
                         "description": "Specific fields to return (e.g., ['Name', 'Description', 'Document Type'])",
                     },
@@ -220,7 +220,7 @@ Results are paginated. Large documents may span multiple pages — check the 'pa
                         "description": "Internal record ID of the document returned by API operations. Use this for programmatic workflows.",
                     },
                     "tag": {
-                        "type": "string",
+                        "type": ["string", "null"],
                         "description": "User-visible document tag, e.g., 'RD-108'. This is what users see in the Helix ALM interface.",
                     },
                     "number": {
@@ -251,7 +251,7 @@ Results are paginated. Large documents may span multiple pages — check the 'pa
                         "description": "The name of the requirement document",
                     },
                     "description": {
-                        "type": "string",
+                        "type": ["string", "null"],
                         "description": "Optional description of the document",
                     },
                     "document_type": {
@@ -289,7 +289,7 @@ To find IDs for existing requirements, use get_requirement with their tag or num
                         "description": "Internal record ID of the document. Use for programmatic workflows.",
                     },
                     "tag": {
-                        "type": "string",
+                        "type": ["string", "null"],
                         "description": "User-visible document tag, e.g., 'RD-108'.",
                     },
                     "number": {
